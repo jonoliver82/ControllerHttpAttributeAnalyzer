@@ -13,6 +13,10 @@ namespace ControllerHttpAttributeAnalyzer
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class ControllerHttpAttributeAnalyzerAnalyzer : DiagnosticAnalyzer
     {
+        private const string CONTROLLER_BASE_TYPE_SUFFIX = "Controller";
+        private const string ASPNET_CORE_ATTRIBUTE_BASE_TYPE_NAME = "HttpMethodAttribute";
+        private const string ASPNET_MVC_ATTRIBUTE_BASE_TYPE_NAME = "ActionMethodSelectorAttribute";
+
         public const string DiagnosticId = "ControllerHttpAttributeAnalyzer";
 
         // You can change these strings in the Resources.resx file. If you do not want your analyzer to be localize-able, you can use regular strings for Title and MessageFormat.
@@ -39,11 +43,14 @@ namespace ControllerHttpAttributeAnalyzer
         private static void AnalyzeMethod(SymbolAnalysisContext context)
         {
             var methodSymbol = (IMethodSymbol)context.Symbol;
-            if (methodSymbol.ContainingType.BaseType.Name.EndsWith("Controller"))
+
+            if (methodSymbol.DeclaredAccessibility == Accessibility.Public &&
+                methodSymbol.ContainingType.BaseType.Name.EndsWith(CONTROLLER_BASE_TYPE_SUFFIX))
             {
                 foreach (var attribute in methodSymbol.GetAttributes())
                 {
-                    if (attribute.AttributeClass.BaseType.Name.Equals("HttpMethodAttribute"))
+                    if (attribute.AttributeClass.BaseType.Name.Equals(ASPNET_CORE_ATTRIBUTE_BASE_TYPE_NAME) ||
+                        attribute.AttributeClass.BaseType.Name.Equals(ASPNET_MVC_ATTRIBUTE_BASE_TYPE_NAME))
                     {
                         return;
                     }
