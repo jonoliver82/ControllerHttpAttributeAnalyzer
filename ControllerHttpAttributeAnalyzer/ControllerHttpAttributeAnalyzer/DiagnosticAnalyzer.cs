@@ -45,6 +45,7 @@ namespace ControllerHttpAttributeAnalyzer
             var methodSymbol = (IMethodSymbol)context.Symbol;
 
             if (methodSymbol.DeclaredAccessibility == Accessibility.Public &&
+                methodSymbol.MethodKind == MethodKind.Ordinary &&
                 methodSymbol.ContainingType.BaseType.Name.EndsWith(CONTROLLER_BASE_TYPE_SUFFIX))
             {
                 foreach (var attribute in methodSymbol.GetAttributes())

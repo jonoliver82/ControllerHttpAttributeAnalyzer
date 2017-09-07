@@ -29,7 +29,28 @@ namespace ControllerHttpAttributeAnalyzer.Test
 			VerifyCSharpDiagnostic(test);
 		}
 
-		[TestMethod]
+        [TestMethod]
+        public void Constructor_RaisesNoDiagnostics()
+        {
+            //Arrange
+            var test = @"
+				using Microsoft.AspNetCore.Mvc;
+
+				namespace WebApplication1.Controllers
+				{
+					public class HomeController : Controller
+					{
+						public HomeController(int value)
+						{
+						}
+					}
+				}";
+
+            //Act & Assert
+            VerifyCSharpDiagnostic(test);
+        }
+
+        [TestMethod]
 		public void PrivateMethod_RaisesNoDiagnostics()
 		{
 			//Arrange
