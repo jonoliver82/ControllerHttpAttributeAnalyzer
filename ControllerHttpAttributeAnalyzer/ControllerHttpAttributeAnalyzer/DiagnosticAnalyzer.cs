@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace ControllerHttpAttributeAnalyzer
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class ControllerHttpAttributeAnalyzerAnalyzer : DiagnosticAnalyzer
+    public class ControllerHttpAttributeAnalyzer : DiagnosticAnalyzer
     {
         private const string CONTROLLER_BASE_TYPE_SUFFIX = "Controller";
         private const string ASPNET_CORE_ATTRIBUTE_BASE_TYPE_NAME = "HttpMethodAttribute";
@@ -37,7 +37,7 @@ namespace ControllerHttpAttributeAnalyzer
 
         /// <summary>
         /// If the method is within a class that inherits from Controller, 
-        /// then check it has an attribute that inherits from HttpMethodAttribute
+        /// then check it has an attribute that inherits from HttpMethodAttribute or ActionMethodSelectorAttribute
         /// </summary>
         /// <param name="context"></param>
         private static void AnalyzeMethod(SymbolAnalysisContext context)
@@ -49,8 +49,9 @@ namespace ControllerHttpAttributeAnalyzer
             {
                 foreach (var attribute in methodSymbol.GetAttributes())
                 {
-                    if (attribute.AttributeClass.BaseType.Name.Equals(ASPNET_CORE_ATTRIBUTE_BASE_TYPE_NAME) ||
-                        attribute.AttributeClass.BaseType.Name.Equals(ASPNET_MVC_ATTRIBUTE_BASE_TYPE_NAME))
+                    if (attribute.AttributeClass.BaseType != null &&
+                        (attribute.AttributeClass.BaseType.Name.Equals(ASPNET_CORE_ATTRIBUTE_BASE_TYPE_NAME) ||
+                        attribute.AttributeClass.BaseType.Name.Equals(ASPNET_MVC_ATTRIBUTE_BASE_TYPE_NAME)))
                     {
                         return;
                     }

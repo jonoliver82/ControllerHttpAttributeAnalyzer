@@ -18,16 +18,19 @@ namespace ControllerHttpAttributeAnalyzer
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ControllerHttpAttributeAnalyzerCodeFixProvider)), Shared]
     public class ControllerHttpAttributeAnalyzerCodeFixProvider : CodeFixProvider
     {
-        private const string title = "Make uppercase";
+        private const string HTTPGET_ATTRIBUTE = "HttpGet";
+        private const string HTTPPOST_ATTRIBUTE = "HttpPost";
+
+        private const string CODEFIX_TITLE_HTTPGET  = "Add [HttpGet] Attribute";
+        private const string CODEFIX_TITLE_HTTPPOST = "Add [HttpPost] Attribute";
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds
         {
-            get { return ImmutableArray.Create(ControllerHttpAttributeAnalyzerAnalyzer.DiagnosticId); }
+            get { return ImmutableArray.Create(ControllerHttpAttributeAnalyzer.DiagnosticId); }
         }
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
-            // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
             return WellKnownFixAllProviders.BatchFixer;
         }
 
@@ -35,39 +38,42 @@ namespace ControllerHttpAttributeAnalyzer
         {
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-            // TODO: Replace the following code with your own analysis, generating a CodeAction for each fix to suggest
             var diagnostic = context.Diagnostics.First();
             var diagnosticSpan = diagnostic.Location.SourceSpan;
 
-            // Find the type declaration identified by the diagnostic.
-            var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().First();
+            // Find the method declaration identified by the diagnostic.
+            var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().First();
 
             // Register a code action that will invoke the fix.
             context.RegisterCodeFix(
                 CodeAction.Create(
-                    title: title,
-                    createChangedSolution: c => MakeUppercaseAsync(context.Document, declaration, c),
-                    equivalenceKey: title),
+                    title: CODEFIX_TITLE_HTTPGET,
+                    createChangedSolution: c => AddAttributeAsync(context.Document, declaration, HTTPGET_ATTRIBUTE, c),
+                    equivalenceKey: CODEFIX_TITLE_HTTPGET),
+                diagnostic);
+
+            // Register a code action that will invoke the fix.
+            context.RegisterCodeFix(
+                CodeAction.Create(
+                    title: CODEFIX_TITLE_HTTPPOST,
+                    createChangedSolution: c => AddAttributeAsync(context.Document, declaration, HTTPPOST_ATTRIBUTE, c),
+                    equivalenceKey: CODEFIX_TITLE_HTTPPOST),
                 diagnostic);
         }
 
-        private async Task<Solution> MakeUppercaseAsync(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)
+        private async Task<Solution> AddAttributeAsync(Document document, MethodDeclarationSyntax methodDecl, string attribute, CancellationToken cancellationToken)
         {
-            // Compute new uppercase name.
-            var identifierToken = typeDecl.Identifier;
-            var newName = identifierToken.Text.ToUpperInvariant();
+            // Construct the new attribute list
+            var name = SyntaxFactory.ParseName(attribute);
+            var newAttribute = SyntaxFactory.Attribute(name);
+            var list = SyntaxFactory.AttributeList();  
+            
+            // Add new attribute to the methods attribute list
+            var attributes = methodDecl.AttributeLists.Add(list.AddAttributes(newAttribute));
 
-            // Get the symbol representing the type to be renamed.
-            var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
-            var typeSymbol = semanticModel.GetDeclaredSymbol(typeDecl, cancellationToken);
-
-            // Produce a new solution that has all references to that type renamed, including the declaration.
-            var originalSolution = document.Project.Solution;
-            var optionSet = originalSolution.Workspace.Options;
-            var newSolution = await Renamer.RenameSymbolAsync(document.Project.Solution, typeSymbol, newName, optionSet, cancellationToken).ConfigureAwait(false);
-
-            // Return the new solution with the now-uppercase type name.
-            return newSolution;
+            // Replace the existing method declaration with this one
+            var root = await document.GetSyntaxRootAsync(cancellationToken);
+            return document.WithSyntaxRoot(root.ReplaceNode(methodDecl, methodDecl.WithAttributeLists(attributes))).Project.Solution;
         }
     }
 }
