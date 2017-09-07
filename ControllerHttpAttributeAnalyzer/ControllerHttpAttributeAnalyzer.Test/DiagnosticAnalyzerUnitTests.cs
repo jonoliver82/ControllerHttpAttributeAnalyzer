@@ -14,26 +14,26 @@ namespace ControllerHttpAttributeAnalyzer.Test
 		private const string DIAGNOSTIC_ID = "ControllerHttpAttributeAnalyzer";
 		private const string MESSAGE_FORMAT = "Controller method '{0}' does not specify a HTTP verb attribute";
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ControllerHttpAttributeAnalyzer();
-        }
+		protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
+		{
+			return new ControllerHttpAttributeAnalyzer();
+		}
 
-        [TestMethod]
+		[TestMethod]
 		public void NoCode_RaisesNoDiagnostics()
 		{
-            //Arrange
-            var test = @"";
+			//Arrange
+			var test = @"";
 
-            //Act & Assert
+			//Act & Assert
 			VerifyCSharpDiagnostic(test);
 		}
 
 		[TestMethod]
 		public void PrivateMethod_RaisesNoDiagnostics()
 		{
-            //Arrange
-            var test = @"
+			//Arrange
+			var test = @"
 				using Microsoft.AspNetCore.Mvc;
 
 				namespace WebApplication1.Controllers
@@ -47,15 +47,15 @@ namespace ControllerHttpAttributeAnalyzer.Test
 					}
 				}";
 
-            //Act & Assert
-            VerifyCSharpDiagnostic(test);
-        }
+			//Act & Assert
+			VerifyCSharpDiagnostic(test);
+		}
 
 		[TestMethod]
 		public void NonControllerBaseClass_RaisesNoDiagnostics()
 		{
-            //Arrange
-            var test = @"
+			//Arrange
+			var test = @"
 				using Microsoft.AspNetCore.Mvc;
 
 				namespace WebApplication1.Controllers
@@ -69,115 +69,115 @@ namespace ControllerHttpAttributeAnalyzer.Test
 					}
 				}";
 
-            //Act & Assert
-            VerifyCSharpDiagnostic(test);
-        }
+			//Act & Assert
+			VerifyCSharpDiagnostic(test);
+		}
 
 		[TestMethod]
 		public void MultipleAttributesIncludingHttpGetVerb_RaisesNoDiagnostics()
 		{
-            //Arrange
-            var test = @"
+			//Arrange
+			var test = @"
 				using System.Web.Mvc;
 
 				namespace WebApplication1.Controllers
 				{
 					public class HomeController : Controller
 					{
-                        [HandleError]
-                        [HttpGet]                        
-                        public IActionResult Index()
+						[HandleError]
+						[HttpGet]                        
+						public IActionResult Index()
 						{
 							return View();
 						}
 					}
 				}";
 
-            //Act & Assert
-            VerifyCSharpDiagnostic(test);
-        }
+			//Act & Assert
+			VerifyCSharpDiagnostic(test);
+		}
 
 		[TestMethod]
 		public void AspNetMvcHttpGetAttribute_RaisesNoDiagnostics()
 		{
-            //Arrange
-            var test = @"
+			//Arrange
+			var test = @"
 				using System.Web.Mvc;
 
 				namespace WebApplication2.Controllers
 				{
 					public class HomeController : Controller
 					{
-                        [HttpGet]						
-                        public ActionResult Index()
+						[HttpGet]						
+						public ActionResult Index()
 						{
 							return View();
 						}
 					}
 				}";
 
-            //Act & Assert
-            VerifyCSharpDiagnostic(test);
-        }
+			//Act & Assert
+			VerifyCSharpDiagnostic(test);
+		}
 
-        [TestMethod]
-        public void AspNetMvcAcceptVerbsAttribute_RaisesNoDiagnostics()
-        {
-            //Arrange
-            var test = @"
+		[TestMethod]
+		public void AspNetMvcAcceptVerbsAttribute_RaisesNoDiagnostics()
+		{
+			//Arrange
+			var test = @"
 				using System.Web.Mvc;
 
 				namespace WebApplication2.Controllers
 				{
 					public class HomeController : Controller
 					{
-                        [AcceptVerbs(HttpVerbs.Get)]						
-                        public ActionResult Index()
+						[AcceptVerbs(HttpVerbs.Get)]						
+						public ActionResult Index()
 						{
 							return View();
 						}
 					}
 				}";
 
-            //Act & Assert
-            VerifyCSharpDiagnostic(test);
-        }
+			//Act & Assert
+			VerifyCSharpDiagnostic(test);
+		}
 
-        [TestMethod]
-        public void HttpAttributeFromDifferentBaseClass_RaisesDiagnostics()
-        {
-            //Arrange
-            var test = @"
-                using System;
+		[TestMethod]
+		public void HttpAttributeFromDifferentBaseClass_RaisesDiagnostics()
+		{
+			//Arrange
+			var test = @"
+				using System;
 				using Microsoft.AspNetCore.Mvc;
 
 				namespace WebApplication1.Controllers
 				{
 					public class HttpTest: Attribute
-                    {
-                    }
-                    
-                    public class HomeController : Controller
+					{
+					}
+					
+					public class HomeController : Controller
 					{
 						[HttpTest]
-                        public IActionResult Index()
+						public IActionResult Index()
 						{
 							return View();
 						}
 					}
 				}";
 
-            var expected = new DiagnosticResult
-            {
-                Id = DIAGNOSTIC_ID,
-                Message = String.Format(MESSAGE_FORMAT, "Index"),
-                Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 46) }
-            };
+			var expected = new DiagnosticResult
+			{
+				Id = DIAGNOSTIC_ID,
+				Message = String.Format(MESSAGE_FORMAT, "Index"),
+				Severity = DiagnosticSeverity.Warning,
+				Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 28) }
+			};
 
-            //Act & Assert
-            VerifyCSharpDiagnostic(test, expected);
-        }
+			//Act & Assert
+			VerifyCSharpDiagnostic(test, expected);
+		}
 
 		[TestMethod]
 		public void AspNetCoreControllerPublicMethod_RaisesDiagnostics()

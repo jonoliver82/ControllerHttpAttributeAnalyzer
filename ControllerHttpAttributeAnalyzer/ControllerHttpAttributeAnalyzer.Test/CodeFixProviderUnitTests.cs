@@ -11,29 +11,29 @@ using TestHelper;
 
 namespace ControllerHttpAttributeAnalyzer.Test
 {
-    /// <summary>
-    /// Note we cant test the fix works on AspNetCore from a project of type .NET Framework (Full)
-    /// </summary>
-    [TestClass]
+	/// <summary>
+	/// Note we cant test the fix works on AspNetCore from a project of type .NET Framework (Full)
+	/// </summary>
+	[TestClass]
 	public class CodeFixProviderUnitTests : CodeFixVerifier
 	{
 		private const string DIAGNOSTIC_ID = "ControllerHttpAttributeAnalyzer";
 		private const string MESSAGE_FORMAT = "Controller method '{0}' does not specify a HTTP verb attribute";
 
-        private const int CODEFIX_ID_HTTPGET = 0;
-        private const int CODEFIX_ID_HTTPPOST = 1;
+		private const int CODEFIX_ID_HTTPGET = 0;
+		private const int CODEFIX_ID_HTTPPOST = 1;
 
 		protected override CodeFixProvider GetCSharpCodeFixProvider()
 		{
 			return new ControllerHttpAttributeAnalyzerCodeFixProvider();
 		}
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new ControllerHttpAttributeAnalyzer();
-        }
+		protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
+		{
+			return new ControllerHttpAttributeAnalyzer();
+		}
 
-        [TestMethod]
+		[TestMethod]
 		public void PostFixAddsPostAttribute()
 		{
 			//Arrange
@@ -73,8 +73,8 @@ namespace WebApplication2.Controllers
 		[TestMethod]
 		public void GetFixAddsGetAttribute()
 		{
-            //Arrange
-            var test = @"
+			//Arrange
+			var test = @"
 using System.Web.Mvc;
 
 namespace WebApplication2.Controllers
@@ -88,7 +88,7 @@ namespace WebApplication2.Controllers
 	}
 }";
 
-            var fixtest = @"
+			var fixtest = @"
 using System.Web.Mvc;
 
 namespace WebApplication2.Controllers
@@ -103,37 +103,37 @@ namespace WebApplication2.Controllers
 	}
 }";
 
-            //Act & Assert
-            VerifyCSharpFix(test, fixtest, CODEFIX_ID_HTTPGET);
-        }
+			//Act & Assert
+			VerifyCSharpFix(test, fixtest, CODEFIX_ID_HTTPGET);
+		}
 
 		[TestMethod]
 		public void GetFixAppendsAttribute_WhenExistingAttributes()
 		{
-            //Arrange
-            var test = @"
+			//Arrange
+			var test = @"
 using System.Web.Mvc;
 
 namespace WebApplication2.Controllers
 {
 	public class HomeController : Controller
 	{
-        [HandleError]						
-        public ActionResult Index()
+		[HandleError]						
+		public ActionResult Index()
 		{
 			return View();
 		}
 	}
 }";
 
-            var fixtest = @"
+			var fixtest = @"
 using System.Web.Mvc;
 
 namespace WebApplication2.Controllers
 {
 	public class HomeController : Controller
 	{
-        [HandleError]
+		[HandleError]
         [HttpGet]
         public ActionResult Index()
 		{
@@ -142,8 +142,8 @@ namespace WebApplication2.Controllers
 	}
 }";
 
-            //Act & Assert
-            VerifyCSharpFix(test, fixtest, CODEFIX_ID_HTTPGET);
-        }
+			//Act & Assert
+			VerifyCSharpFix(test, fixtest, CODEFIX_ID_HTTPGET);
+		}
 	}
 }
